@@ -24,8 +24,15 @@ import io.termd.core.http.HttpTtyConnection;
 public class ExtHttpTtyConnection extends HttpTtyConnection {
     private ChannelHandlerContext context;
 
+    private String blockCommands;
+
     public ExtHttpTtyConnection(ChannelHandlerContext context) {
         this.context = context;
+    }
+
+    public ExtHttpTtyConnection(ChannelHandlerContext context, String blockCommands) {
+        this.context = context;
+        this.blockCommands = blockCommands;
     }
 
     @Override
@@ -71,6 +78,10 @@ public class ExtHttpTtyConnection extends HttpTtyConnection {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public String getBlockCommands() {
+        return this.blockCommands;
     }
 
 }

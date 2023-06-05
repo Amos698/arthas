@@ -16,9 +16,12 @@
 
 package com.taobao.arthas.core.shell.term.impl.http;
 
+import com.alibaba.arthas.deps.org.slf4j.Logger;
+import com.alibaba.arthas.deps.org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.websocketx.PingWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
@@ -27,11 +30,15 @@ import io.termd.core.function.Consumer;
 import io.termd.core.http.HttpTtyConnection;
 import io.termd.core.tty.TtyConnection;
 
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class TtyWebSocketFrameHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+  private static final Logger logger = LoggerFactory.getLogger(TtyWebSocketFrameHandler.class);
 
   private final ChannelGroup group;
   private final Consumer<TtyConnection> handler;
@@ -51,10 +58,14 @@ public class TtyWebSocketFrameHandler extends SimpleChannelInboundHandler<TextWe
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-    if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+    if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+      WebSocketServerProtocolHandler.HandshakeComplete handshake = (WebSocketServerProtocolHandler.HandshakeComplete) evt;
+      QueryStringDecoder queryDecoder = new QueryStringDecoder(handshake.requestUri());
+      Map<String, List<String>> parameters = queryDecoder.parameters();
+      logger.info("tty websocket frame handler handshake complete blockCommands:{}", parameters.get("blockCommands"));
       ctx.pipeline().remove(HttpRequestHandler.class);
       group.add(ctx.channel());
-      conn = new ExtHttpTtyConnection(context);
+      conn = new ExtHttpTtyConnection(context, parameters.get("blockCommands").get(0));
       handler.accept(conn);
     } else if (evt instanceof IdleStateEvent) {
       ctx.writeAndFlush(new PingWebSocketFrame());
