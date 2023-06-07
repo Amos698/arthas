@@ -38,8 +38,15 @@ public class ForwardClient {
     private final static Logger logger = LoggerFactory.getLogger(ForwardClient.class);
     private URI tunnelServerURI;
 
+    private String blockCommands;
+
     public ForwardClient(URI tunnelServerURI) {
         this.tunnelServerURI = tunnelServerURI;
+    }
+
+    public ForwardClient(URI tunnelServerURI, String blockCommands) {
+        this.tunnelServerURI = tunnelServerURI;
+        this.blockCommands = blockCommands;
     }
 
     public void start() throws URISyntaxException, SSLException, InterruptedException {
@@ -79,7 +86,7 @@ public class ForwardClient {
         final WebSocketClientProtocolHandler websocketClientHandler = new WebSocketClientProtocolHandler(
                 clientProtocolConfig);
 
-        final ForwardClientSocketClientHandler forwardClientSocketClientHandler = new ForwardClientSocketClientHandler();
+        final ForwardClientSocketClientHandler forwardClientSocketClientHandler = new ForwardClientSocketClientHandler(blockCommands);
 
         final EventLoopGroup group = new NioEventLoopGroup(1, new DefaultThreadFactory("arthas-ForwardClient", true));
         ChannelFuture closeFuture = null;

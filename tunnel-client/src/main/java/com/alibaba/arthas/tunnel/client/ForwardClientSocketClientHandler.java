@@ -1,7 +1,11 @@
 package com.alibaba.arthas.tunnel.client;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 
+import com.alibaba.arthas.tunnel.common.MethodConstants;
+import com.alibaba.arthas.tunnel.common.URIConstans;
+import io.netty.handler.codec.http.QueryStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +43,12 @@ public class ForwardClientSocketClientHandler extends SimpleChannelInboundHandle
 
     private ChannelPromise handshakeFuture;
 
+    private final String blockCommands;
+
+    public ForwardClientSocketClientHandler(String blockCommands) {
+        this.blockCommands = blockCommands;
+    }
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
     }
@@ -67,8 +77,12 @@ public class ForwardClientSocketClientHandler extends SimpleChannelInboundHandle
         try {
             logger.info("ForwardClientSocketClientHandler star connect local arthas server");
             // 入参URI实际无意义，只为了程序不出错
+
+            QueryStringEncoder queryEncoder = new QueryStringEncoder("ws://127.0.0.1:8563/ws");
+            queryEncoder.addParam("blockCommands", blockCommands);
+
             WebSocketClientProtocolConfig clientProtocolConfig = WebSocketClientProtocolConfig.newBuilder()
-                    .webSocketUri("ws://127.0.0.1:8563/ws")
+                    .webSocketUri(queryEncoder.toUri())
                     .maxFramePayloadLength(ArthasConstants.MAX_HTTP_CONTENT_LENGTH).build();
 
             final WebSocketClientProtocolHandler websocketClientHandler = new WebSocketClientProtocolHandler(

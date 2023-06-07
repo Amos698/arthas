@@ -87,7 +87,7 @@ public class TunnelClientSocketClientHandler extends SimpleChannelInboundHandler
 
                 logger.info("start ForwardClient, uri: {}", forwardUri);
                 try {
-                    ForwardClient forwardClient = new ForwardClient(forwardUri);
+                    ForwardClient forwardClient = new ForwardClient(forwardUri, parameters.get("blockCommands").get(0));
                     forwardClient.start();
                 } catch (Throwable e) {
                     logger.error("start ForwardClient error, forwardUri: {}", forwardUri, e);

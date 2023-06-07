@@ -35,12 +35,8 @@ import io.termd.core.tty.TtyConnection;
 import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.security.Principal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -95,6 +91,10 @@ public class ShellImpl implements Shell {
                 Map<String, Object> extSessions = extConn.extSessions();
                 for (Entry<String, Object> entry : extSessions.entrySet()) {
                     session.put(entry.getKey(), entry.getValue());
+                }
+
+                if (extConn.getBlockCommands() != null && !extConn.getBlockCommands().isEmpty()) {
+                    session.put("blockCommands", new HashSet<>(Arrays.asList(extConn.getBlockCommands().split(","))));
                 }
             }
         }

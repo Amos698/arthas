@@ -74,6 +74,10 @@ public class JobControllerImpl implements JobController {
                 throw new IllegalArgumentException("Error! command not permitted, try to use 'auth' command to authenticates.");
             }
         }
+        Set<String> blockCommands = session.get("blockCommands");
+        if (blockCommands != null && blockCommands.contains(token.value().trim())) {
+            throw new IllegalArgumentException(String.format("Error! command '%s' not permitted", token.value().trim()));
+        }
     }
 
     @Override
