@@ -30,6 +30,7 @@ import io.termd.core.function.Consumer;
 import io.termd.core.http.HttpTtyConnection;
 import io.termd.core.tty.TtyConnection;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,12 @@ public class TtyWebSocketFrameHandler extends SimpleChannelInboundHandler<TextWe
       logger.info("tty websocket frame handler handshake complete blockCommands:{}", parameters.get("blockCommands"));
       ctx.pipeline().remove(HttpRequestHandler.class);
       group.add(ctx.channel());
-      conn = new ExtHttpTtyConnection(context, parameters.get("blockCommands").get(0));
+      Map<String, String> params = new HashMap<>();
+      for (Map.Entry<String, List<String>> entry : parameters.entrySet()) {
+        // only support one value
+        params.put(entry.getKey(), entry.getValue().get(0));
+      }
+      conn = new ExtHttpTtyConnection(context, params);
       handler.accept(conn);
     } else if (evt instanceof IdleStateEvent) {
       ctx.writeAndFlush(new PingWebSocketFrame());

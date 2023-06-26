@@ -96,6 +96,11 @@ public class ShellImpl implements Shell {
                 if (extConn.getBlockCommands() != null && !extConn.getBlockCommands().isEmpty()) {
                     session.put("blockCommands", new HashSet<>(Arrays.asList(extConn.getBlockCommands().split(","))));
                 }
+
+                if (extConn.getJobId() != null && !extConn.getJobId().isEmpty()) {
+                    session.put("jobId", extConn.getJobId());
+                }
+
             }
         }
         session.put(Session.COMMAND_MANAGER, commandManager);

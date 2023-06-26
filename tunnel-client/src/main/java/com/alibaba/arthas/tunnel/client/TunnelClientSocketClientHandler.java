@@ -4,6 +4,7 @@ package com.alibaba.arthas.tunnel.client;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -87,7 +88,9 @@ public class TunnelClientSocketClientHandler extends SimpleChannelInboundHandler
 
                 logger.info("start ForwardClient, uri: {}", forwardUri);
                 try {
-                    ForwardClient forwardClient = new ForwardClient(forwardUri, parameters.get("blockCommands").get(0));
+                    String blockCommands = Optional.ofNullable(parameters.get("blockCommands")).map(p -> p.get(0)).orElse("");
+                    String jobId = Optional.ofNullable(parameters.get("jobId")).map(p -> p.get(0)).orElse("");
+                    ForwardClient forwardClient = new ForwardClient(forwardUri, blockCommands, jobId);
                     forwardClient.start();
                 } catch (Throwable e) {
                     logger.error("start ForwardClient error, forwardUri: {}", forwardUri, e);

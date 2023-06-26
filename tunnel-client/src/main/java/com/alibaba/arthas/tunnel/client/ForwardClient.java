@@ -40,13 +40,16 @@ public class ForwardClient {
 
     private String blockCommands;
 
+    private String jobId;
+
     public ForwardClient(URI tunnelServerURI) {
         this.tunnelServerURI = tunnelServerURI;
     }
 
-    public ForwardClient(URI tunnelServerURI, String blockCommands) {
+    public ForwardClient(URI tunnelServerURI, String blockCommands, String jobId) {
         this.tunnelServerURI = tunnelServerURI;
         this.blockCommands = blockCommands;
+        this.jobId = jobId;
     }
 
     public void start() throws URISyntaxException, SSLException, InterruptedException {
@@ -86,7 +89,7 @@ public class ForwardClient {
         final WebSocketClientProtocolHandler websocketClientHandler = new WebSocketClientProtocolHandler(
                 clientProtocolConfig);
 
-        final ForwardClientSocketClientHandler forwardClientSocketClientHandler = new ForwardClientSocketClientHandler(blockCommands);
+        final ForwardClientSocketClientHandler forwardClientSocketClientHandler = new ForwardClientSocketClientHandler(blockCommands, jobId);
 
         final EventLoopGroup group = new NioEventLoopGroup(1, new DefaultThreadFactory("arthas-ForwardClient", true));
         ChannelFuture closeFuture = null;

@@ -24,15 +24,15 @@ import io.termd.core.http.HttpTtyConnection;
 public class ExtHttpTtyConnection extends HttpTtyConnection {
     private ChannelHandlerContext context;
 
-    private String blockCommands;
+    private Map<String, String> params;
 
     public ExtHttpTtyConnection(ChannelHandlerContext context) {
         this.context = context;
     }
 
-    public ExtHttpTtyConnection(ChannelHandlerContext context, String blockCommands) {
+    public ExtHttpTtyConnection(ChannelHandlerContext context, Map<String, String> params) {
         this.context = context;
-        this.blockCommands = blockCommands;
+        this.params = params;
     }
 
     @Override
@@ -81,7 +81,15 @@ public class ExtHttpTtyConnection extends HttpTtyConnection {
     }
 
     public String getBlockCommands() {
-        return this.blockCommands;
+        return params.get("blockCommands");
+    }
+
+    public String getJobId() {
+        return params.get("jobId");
+    }
+
+    public Map<String, String> getParams() {
+        return params;
     }
 
 }

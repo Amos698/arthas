@@ -1,5 +1,7 @@
 package com.taobao.arthas.core.shell.system.impl;
 
+import com.alibaba.arthas.deps.org.slf4j.Logger;
+import com.alibaba.arthas.deps.org.slf4j.LoggerFactory;
 import com.taobao.arthas.common.ArthasConstants;
 import com.taobao.arthas.core.GlobalOptions;
 import com.taobao.arthas.core.distribution.ResultDistributor;
@@ -11,6 +13,7 @@ import com.taobao.arthas.core.shell.command.internal.StdoutHandler;
 import com.taobao.arthas.core.shell.command.internal.TermHandler;
 import com.taobao.arthas.core.shell.future.Future;
 import com.taobao.arthas.core.shell.handlers.Handler;
+import com.taobao.arthas.core.shell.impl.ShellImpl;
 import com.taobao.arthas.core.shell.session.Session;
 import com.taobao.arthas.core.shell.system.Job;
 import com.taobao.arthas.core.shell.system.JobController;
@@ -26,14 +29,7 @@ import io.termd.core.function.Function;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -42,6 +38,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author gongdewei 2020-03-23
  */
 public class JobControllerImpl implements JobController {
+
+    private static final Logger logger = LoggerFactory.getLogger(JobControllerImpl.class);
 
     private final SortedMap<Integer, JobImpl> jobs = new TreeMap<Integer, JobImpl>();
     private final AtomicInteger idGenerator = new AtomicInteger(0);
@@ -63,6 +61,11 @@ public class JobControllerImpl implements JobController {
     }
 
     private void checkPermission(Session session, CliToken token) {
+        String command = "";
+        if (token != null && token.isText()) {
+            command = token.value().trim();
+        }
+        logger.info("audit: user:{} execute command:{}", Optional.ofNullable(session.get("jobId")).orElse("anon"), command);
         if (ArthasBootstrap.getInstance().getSecurityAuthenticator().needLogin()) {
             // 检查session是否有 Subject
             Object subject = session.get(ArthasConstants.SUBJECT_KEY);
@@ -75,7 +78,9 @@ public class JobControllerImpl implements JobController {
             }
         }
         Set<String> blockCommands = session.get("blockCommands");
-        if (blockCommands != null && blockCommands.contains(token.value().trim())) {
+        if (blockCommands != null && !blockCommands.isEmpty()
+                && token != null && token.isText()
+                && blockCommands.contains(token.value().trim())) {
             throw new IllegalArgumentException(String.format("Error! command '%s' not permitted", token.value().trim()));
         }
     }

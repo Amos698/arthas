@@ -2,9 +2,8 @@ package com.alibaba.arthas.tunnel.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
-import com.alibaba.arthas.tunnel.common.MethodConstants;
-import com.alibaba.arthas.tunnel.common.URIConstans;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +44,11 @@ public class ForwardClientSocketClientHandler extends SimpleChannelInboundHandle
 
     private final String blockCommands;
 
-    public ForwardClientSocketClientHandler(String blockCommands) {
+    private final String jobId;
+
+    public ForwardClientSocketClientHandler(String blockCommands, String jobId) {
         this.blockCommands = blockCommands;
+        this.jobId = jobId;
     }
 
     @Override
@@ -79,7 +81,12 @@ public class ForwardClientSocketClientHandler extends SimpleChannelInboundHandle
             // 入参URI实际无意义，只为了程序不出错
 
             QueryStringEncoder queryEncoder = new QueryStringEncoder("ws://127.0.0.1:8563/ws");
-            queryEncoder.addParam("blockCommands", blockCommands);
+            if (blockCommands != null && !blockCommands.isEmpty()) {
+                queryEncoder.addParam("blockCommands", blockCommands);
+            }
+            if (jobId != null && !jobId.isEmpty()) {
+                queryEncoder.addParam("jobId", jobId);
+            }
 
             WebSocketClientProtocolConfig clientProtocolConfig = WebSocketClientProtocolConfig.newBuilder()
                     .webSocketUri(queryEncoder.toUri())
